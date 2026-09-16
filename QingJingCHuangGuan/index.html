@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="NV66J4MyWHhLPF7e2SM7tm">
+<head data-page-node-id="dlnWmeGH0S1TGDcogubWA4">
+<meta charset="UTF-8" data-page-node-id="3E3lCgvjIloyLrtUmsyfjC">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" data-page-node-id="XJ9IdzpkRo8csOL943z1sH">
+<title>网络安全 · 小明的闯关</title>
+<style>
+  :root{
+    --blue:#2563EB; --blue2:#3B82F6; --deep:#1E3A8A;
+    --ok:#16A34A; --ok-bg:#F0FDF4; --bad:#EF4444; --bad-bg:#FEF2F2;
+    --ink:#0F172A; --sub:#64748B; --line:#E2E8F0;
+    --amber:#F59E0B; --violet:#8B5CF6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{width:100%;height:100%;overflow:hidden;}
+  body{
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+    background:linear-gradient(160deg,#EEF4FF 0%,#F8FBFF 60%,#EAF1FF 100%);
+    color:var(--ink);
+    touch-action:manipulation; user-select:none; -webkit-user-select:none;
+  }
+  #app{width:100%;height:100%;position:relative;}
+
+  /* ============ 顶部进度地图 ============ */
+  .topbar{
+    position:absolute; top:0; left:0; right:0; height:12vh;
+    background:linear-gradient(135deg,#1E3A8A 0%,#2563EB 100%);
+    display:flex; align-items:center; justify-content:center; gap:2.6vw;
+    box-shadow:0 4px 20px rgba(37,99,235,.25); z-index:10;
+  }
+  .step{display:flex; flex-direction:column; align-items:center; gap:.5vh; opacity:.42; transition:.3s;}
+  .step.active{opacity:1;}
+  .step.done{opacity:1;}
+  .step .dot{
+    width:6vh; height:6vh; border-radius:50%;
+    background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.5);
+    display:flex; align-items:center; justify-content:center;
+    font-size:3vh; font-weight:800; color:#fff; transition:.3s;
+  }
+  .step.active .dot{background:#fff; color:var(--blue); border-color:#fff; transform:scale(1.15); box-shadow:0 0 0 6px rgba(255,255,255,.2);}
+  .step.done .dot{background:var(--ok); border-color:var(--ok);}
+  .step .lbl{font-size:1.9vh; color:#fff; font-weight:600; letter-spacing:1px;}
+  .arrow{font-size:3.2vh; color:rgba(255,255,255,.55); font-weight:800;}
+
+  /* ============ 主体 ============ */
+  .stage{
+    position:absolute; top:12vh; bottom:0; left:0; right:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:2.5vh 4vw;
+  }
+
+  /* ============ 开场页 ============ */
+  .intro-wrap{display:flex; flex-direction:column; align-items:center; gap:2.4vh; text-align:center; max-width:1000px; width:100%;}
+  .intro-badge{padding:.7vh 2vw; background:rgba(37,99,235,.1); border-radius:20px; font-size:2.2vh; color:var(--blue); font-weight:700; letter-spacing:2px;}
+  .intro-hero{display:flex; align-items:center; gap:2vw;}
+  .intro-hero svg{width:clamp(120px,16vh,180px); animation:float 3s ease-in-out infinite;}
+  .intro-title{font-size:clamp(40px,7.5vh,84px); font-weight:900; letter-spacing:3px; color:var(--ink); line-height:1.15;}
+  .intro-title .accent{background:linear-gradient(135deg,var(--blue),var(--blue2)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .intro-sub{font-size:clamp(15px,2.4vh,24px); color:var(--sub);}
+  .lv-list{display:flex; gap:1.6vw; justify-content:center; width:100%;}
+  .lv-card{
+    flex:1; max-width:280px; padding:2vh 1.2vw; border-radius:16px; background:#fff;
+    border:1.5px solid var(--line); display:flex; flex-direction:column; align-items:center; gap:.8vh;
+    box-shadow:0 6px 20px rgba(15,23,42,.05);
+  }
+  .lv-card .ico{font-size:clamp(28px,5vh,48px);}
+  .lv-card .nm{font-size:clamp(18px,2.8vh,28px); font-weight:800; color:var(--ink);}
+  .lv-card .ds{font-size:clamp(13px,2vh,19px); color:var(--sub);}
+  .btn-start{
+    padding:1.6vh 5vw; border:none; border-radius:16px; cursor:pointer;
+    background:linear-gradient(135deg,#2563EB 0%,#3B82F6 100%); color:#fff;
+    font-size:clamp(22px,3.6vh,38px); font-weight:800; letter-spacing:3px;
+    box-shadow:0 8px 24px rgba(37,99,235,.35); transition:.2s; font-family:inherit;
+  }
+  .btn-start:hover{transform:translateY(-2px); box-shadow:0 12px 30px rgba(37,99,235,.45);}
+  .btn-start:active{transform:scale(.98);}
+
+  /* ============ 关卡页 ============ */
+  .scene-wrap{
+    width:100%; max-width:1280px; flex:1; min-height:0;
+    display:flex; align-items:center; justify-content:center; gap:2vw; padding:1vh 0;
+  }
+  .actor{display:flex; flex-direction:column; align-items:center; gap:.6vh; flex:0 0 auto;}
+  .actor .avatar{
+    width:clamp(90px,15vh,150px); height:clamp(90px,15vh,150px); border-radius:24px;
+    display:flex; align-items:center; justify-content:center; font-size:clamp(52px,9vh,90px);
+    background:#fff; box-shadow:0 8px 24px rgba(15,23,42,.1); position:relative;
+    transition:transform .4s;
+  }
+  .actor .name{font-size:clamp(13px,2vh,19px); font-weight:700; color:var(--sub);}
+  .actor .avatar.other{animation:popIn .5s ease;}
+  .actor .avatar.speaking{animation:bob .5s ease;}
+
+  .ming{width:clamp(120px,22vh,210px); transition:transform .35s; flex:0 0 auto;}
+  .ming.happy{animation:bounce .6s ease;}
+  .ming.sad{animation:slump .6s ease forwards;}
+  .ming.scared{animation:shake .5s ease;}
+
+  .bubble{
+    flex:1; max-width:620px; min-width:0; position:relative;
+    background:#fff; border-radius:20px; padding:2.6vh 2.2vw;
+    box-shadow:0 8px 28px rgba(15,23,42,.1); border:2px solid var(--line);
+    font-size:clamp(18px,3vh,30px); font-weight:600; line-height:1.6; color:var(--ink);
+    animation:popIn .45s ease;
+  }
+  .bubble::before{
+    content:''; position:absolute; top:50%; left:-14px; margin-top:-14px;
+    border:14px solid transparent; border-right-color:#fff; border-left:0;
+    filter:drop-shadow(-2px 0 0 var(--line));
+  }
+  .bubble .who{display:inline-block; font-size:clamp(13px,1.9vh,18px); font-weight:800; color:#fff; background:var(--blue); border-radius:8px; padding:2px 12px; margin-bottom:1vh;}
+  .bubble.bad .who{background:var(--bad);}
+  .bubble .hl{color:var(--blue); font-weight:800;}
+  .bubble.bad .hl{color:var(--bad);}
+  .bubble.result-ok{border-color:var(--ok); background:var(--ok-bg);}
+  .bubble.result-bad{border-color:var(--bad); background:var(--bad-bg);}
+
+  .options{width:100%; max-width:1280px; display:flex; flex-direction:column; gap:1.6vh; margin-top:1.6vh;}
+  .opt{
+    display:flex; align-items:center; gap:1.2vw; text-align:left;
+    padding:1.6vh 1.6vw; border-radius:16px; cursor:pointer;
+    background:#fff; border:3px solid var(--line); font-size:clamp(20px,3.2vh,34px); font-weight:700; color:var(--ink);
+    transition:.15s; line-height:1.4; box-shadow:0 4px 14px rgba(15,23,42,.05);
+  }
+  .opt:hover{border-color:var(--blue2); background:#EFF6FF;}
+  .opt .tag{
+    flex:0 0 auto; width:clamp(40px,6vh,58px); height:clamp(40px,6vh,58px); border-radius:14px;
+    background:rgba(37,99,235,.1); color:var(--blue);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:clamp(20px,3vh,30px);
+  }
+  .opt.picked-ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.picked-ok .tag{background:var(--ok); color:#fff;}
+  .opt.picked-bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt.picked-bad .tag{background:var(--bad); color:#fff;}
+  .opt.dim{opacity:.5;}
+  .opt.disabled{pointer-events:none;}
+
+  .foot{display:flex; align-items:center; justify-content:center; margin-top:1.4vh;}
+  .btn-next{
+    padding:1.3vh 3.6vw; border:none; border-radius:14px; cursor:pointer;
+    background:linear-gradient(135deg,#2563EB 0%,#3B82F6 100%); color:#fff;
+    font-size:clamp(19px,3vh,30px); font-weight:800; letter-spacing:2px;
+    box-shadow:0 6px 18px rgba(37,99,235,.3); transition:.2s; font-family:inherit;
+  }
+  .btn-next:hover{transform:translateY(-2px);}
+
+  /* ============ 讲解页 ============ */
+  .teach-wrap{display:flex; flex-direction:column; align-items:center; width:100%; max-width:1200px; flex:1; min-height:0; gap:1.6vh;}
+  .teach-head{display:flex; align-items:center; gap:1.6vw; margin-bottom:.4vh;}
+  .teach-head .ming{width:clamp(70px,11vh,110px);}
+  .teach-head .tt{display:flex; flex-direction:column; gap:.5vh;}
+  .teach-tag{font-size:clamp(13px,2vh,19px); font-weight:800; color:var(--blue); letter-spacing:2px;}
+  .teach-title{font-size:clamp(28px,4.6vh,50px); font-weight:900; color:var(--ink);}
+  .teach-sub{font-size:clamp(14px,2.2vh,22px); color:var(--sub);}
+
+  .teach-stage{
+    width:100%; flex:1; min-height:0; overflow-y:auto; position:relative;
+    display:flex; flex-direction:column; gap:1.4vh; padding:.6vh .2vw;
+    scroll-behavior:smooth;
+  }
+  .teach-hint{
+    align-self:center; margin-top:2vh; padding:1.2vh 2.4vw; border-radius:14px;
+    background:rgba(37,99,235,.08); color:var(--blue); font-size:clamp(16px,2.6vh,26px); font-weight:700;
+    display:flex; align-items:center; gap:.8vw; cursor:pointer; transition:.2s;
+    animation:gentlePulse 1.6s ease-in-out infinite;
+  }
+  .teach-hint:hover{background:rgba(37,99,235,.15);}
+  .card{
+    background:#fff; border:2px solid var(--line); border-radius:18px; padding:2vh 1.8vw;
+    display:flex; gap:1.4vw; align-items:flex-start;
+    box-shadow:0 6px 20px rgba(15,23,42,.06);
+    animation:cardIn .45s cubic-bezier(.2,.8,.3,1.2);
+  }
+  .card.hot{border-color:rgba(239,68,68,.4); background:#FFFBEB;}
+  .card .c-ico{
+    flex:0 0 auto; width:clamp(46px,7vh,66px); height:clamp(46px,7vh,66px); border-radius:14px;
+    display:flex; align-items:center; justify-content:center; font-size:clamp(26px,4vh,40px);
+    background:rgba(37,99,235,.08);
+  }
+  .card.hot .c-ico{background:rgba(239,68,68,.1);}
+  .card .c-body{flex:1; display:flex; flex-direction:column; gap:.6vh;}
+  .card .c-title{font-size:clamp(18px,2.8vh,28px); font-weight:800; color:var(--ink);}
+  .card.hot .c-title{color:var(--bad);}
+  .card .c-text{font-size:clamp(15px,2.4vh,24px); color:#334155; line-height:1.65;}
+  .card .c-text b{color:var(--blue);}
+  .card.hot .c-text b{color:var(--bad);}
+
+  .teach-progress{font-size:clamp(13px,2vh,19px); color:var(--sub);}
+
+  /* ============ 结算页 ============ */
+  .result-wrap{display:flex; flex-direction:column; align-items:center; gap:2.4vh; text-align:center; max-width:1000px; width:100%;}
+  .result-emoji{font-size:clamp(64px,11vh,120px); animation:float 3s ease-in-out infinite;}
+  .result-badge{padding:.7vh 2vw; background:rgba(22,163,74,.12); border-radius:20px; font-size:2.2vh; color:var(--ok); font-weight:800; letter-spacing:2px;}
+  .result-title{font-size:clamp(34px,6vh,66px); font-weight:900; color:var(--ink);}
+  .result-grid{display:flex; gap:1.6vw; justify-content:center; width:100%;}
+  .r-card{
+    flex:1; max-width:280px; padding:2vh 1.2vw; border-radius:16px; background:#fff;
+    display:flex; flex-direction:column; align-items:center; gap:.8vh; border:1.5px solid var(--line);
+  }
+  .r-card.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .r-card.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .r-card .rn{font-size:clamp(15px,2.2vh,22px); font-weight:800; color:var(--sub);}
+  .r-card .rs{font-size:clamp(22px,3.4vh,36px); font-weight:800; color:var(--ink);}
+  .r-card .remind{font-size:clamp(13px,2vh,19px); color:var(--sub); line-height:1.5;}
+  .btn-restart{
+    padding:1.3vh 3.4vw; border:none; border-radius:14px; cursor:pointer;
+    background:#EFF6FF; color:var(--blue); border:2px solid var(--blue);
+    font-size:clamp(18px,2.8vh,28px); font-weight:800; letter-spacing:2px; font-family:inherit;
+  }
+
+  /* ============ 动画 ============ */
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  @keyframes popIn{from{opacity:0; transform:scale(.9) translateY(8px);}to{opacity:1; transform:scale(1) translateY(0);}}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  @keyframes bounce{0%,100%{transform:translateY(0) scale(1);}30%{transform:translateY(-16px) scale(1.06);}60%{transform:translateY(0) scale(.98);}}
+  @keyframes slump{0%{transform:translateY(0) rotate(0);}60%{transform:translateY(10px) rotate(-3deg);}100%{transform:translateY(6px) rotate(-2deg);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}50%{transform:translateX(6px);}75%{transform:translateX(-4px);}}
+  @keyframes cardIn{from{opacity:0; transform:translateY(24px) scale(.96);}to{opacity:1; transform:translateY(0) scale(1);}}
+  @keyframes gentlePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+</style>
+</head>
+<body data-page-node-id="ogItxvedHcbCXOuyuy0rJA">
+<div id="app" data-page-node-id="tHYJcWABlRg4aLeUXBRlry"></div>
+<script>
+(function(){
+  "use strict";
+
+  /* ================= 小明角色 SVG ================= */
+  function xiaoming(mood){
+    var eye='', mouth='';
+    if(mood==='happy'){
+      eye='<path d="M58 64 Q65 56 72 64" fill="none" stroke="#2B2B3A" stroke-width="4" stroke-linecap="round"/><path d="M88 64 Q95 56 102 64" fill="none" stroke="#2B2B3A" stroke-width="4" stroke-linecap="round"/>';
+      mouth='<path d="M65 80 Q80 100 95 80 Z" fill="#2B2B3A"/>';
+    } else if(mood==='sad'){
+      eye='<path d="M58 66 Q65 61 72 66" fill="none" stroke="#2B2B3A" stroke-width="4" stroke-linecap="round"/><path d="M88 66 Q95 61 102 66" fill="none" stroke="#2B2B3A" stroke-width="4" stroke-linecap="round"/><ellipse cx="65" cy="74" rx="3" ry="5" fill="#60A5FA"/><ellipse cx="95" cy="74" rx="3" ry="5" fill="#60A5FA"/>';
+      mouth='<path d="M69 92 Q80 82 91 92" fill="none" stroke="#2B2B3A" stroke-width="4" stroke-linecap="round"/>';
+    } else if(mood==='scared'){
+      eye='<circle cx="65" cy="65" r="9" fill="#fff" stroke="#2B2B3A" stroke-width="3"/><circle cx="95" cy="65" r="9" fill="#fff" stroke="#2B2B3A" stroke-width="3"/><circle cx="65" cy="65" r="3.5" fill="#2B2B3A"/><circle cx="95" cy="65" r="3.5" fill="#2B2B3A"/>';
+      mouth='<ellipse cx="80" cy="86" rx="8" ry="12" fill="#2B2B3A"/>';
+    } else { // normal
+      eye='<circle cx="65" cy="65" r="5.5" fill="#2B2B3A"/><circle cx="95" cy="65" r="5.5" fill="#2B2B3A"/>';
+      mouth='<path d="M70 83 Q80 90 90 83" fill="none" stroke="#2B2B3A" stroke-width="4" stroke-linecap="round"/>';
+    }
+    return '<svg class="ming '+mood+'" viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">'+
+      '<path d="M50 210 L50 152 Q50 140 62 140 L98 140 Q110 140 110 152 L110 210 Z" fill="#2563EB"/>'+
+      '<path d="M50 210 L50 184 L110 184 L110 210 Z" fill="#3B82F6"/>'+
+      '<path d="M50 154 Q36 170 40 188" stroke="#FFDFC2" stroke-width="10" fill="none" stroke-linecap="round"/>'+
+      '<path d="M110 154 Q124 170 120 188" stroke="#FFDFC2" stroke-width="10" fill="none" stroke-linecap="round"/>'+
+      '<circle cx="80" cy="66" r="42" fill="#FFDFC2"/>'+
+      '<path d="M38 66 Q34 16 80 16 Q126 16 122 66 Q120 42 80 40 Q40 42 38 66 Z" fill="#2B2B3A"/>'+
+      '<path d="M50 60 Q38 44 42 34 Q48 42 52 34 Q56 44 58 54 Z" fill="#2B2B3A"/>'+
+      '<path d="M110 60 Q122 44 118 34 Q112 42 108 34 Q104 44 102 54 Z" fill="#2B2B3A"/>'+
+      '<circle cx="56" cy="80" r="6.5" fill="#FFB3A0" opacity="0.55"/>'+
+      '<circle cx="104" cy="80" r="6.5" fill="#FFB3A0" opacity="0.55"/>'+
+      eye + mouth +
+      '</svg>';
+  }
+
+  /* ================= 关卡数据 ================= */
+  var LEVELS = [
+    {
+      tag:'第一关', name:'免费皮肤陷阱', theme:'个人信息保护',
+      other:{ ico:'📱', nm:'"客服"', },
+      who:'骗子"客服"', whoBad:true,
+      bubble:'放学路上，小明刷短视频，看到一条"进 QQ 群免费领《蛋仔派对》限定皮肤"的广告。进群后"客服"说：<span class="hl">未成年领皮肤导致账户被冻结了</span>，快拿父母手机解冻，否则父母会坐牢！',
+      options:[
+        { text:'赶紧拿妈妈手机，按"客服"说的操作去解冻', correct:false },
+        { text:'不理它，关掉群聊，马上告诉家长', correct:true }
+      ],
+      reactOk:'🎉 <b>漂亮！</b>你没上钩——"免费皮肤 + 账户被冻结"是专坑未成年人的连环套。',
+      reactBad:'😰 <b>踩坑了！</b>这就是专骗未成年人的套路，接着就会诱导你拿父母手机转账。',
+      teach:[
+        { ico:'🔍', hot:false, title:'拆穿套路', text:'"免费皮肤 + 账户被冻结"是骗子专为未成年人设计的连环套——<b>先吓唬你，再骗你拿父母手机</b>。' },
+        { ico:'🔐', hot:false, title:'你的"取钱三件套"', text:'<b>身份证号 + 银行卡号 + 短信验证码</b>，三样凑齐就能把钱转走。尤其验证码，就是你家钱的"钥匙"。' },
+        { ico:'📰', hot:true, title:'真实案例', text:'安徽黄山一名初中生刷快手进群领《蛋仔派对》皮肤，被"客服"吓得偷拿妈妈手机，视频通话指导下转走 <b>3.6 万元</b>（警方已全额追回）。' },
+        { ico:'✅', hot:false, title:'记住一句话', text:'<b>天上不会掉皮肤。</b>凡是"免费 + 要信息 + 吓唬你"，先停下来，告诉家长。' }
+      ]
+    },
+    {
+      tag:'第二关', name:'出租微信号', theme:'帮信罪与法律',
+      other:{ ico:'🧑‍🤝‍🧑', nm:'同学小刚', },
+      who:'同学小刚', whoBad:false,
+      bubble:'同学小刚神神秘秘地拉小明："出租微信号，<span class="hl">每小时 300 元</span>，就加几个群，轻松赚零花钱，要不要一起？"',
+      options:[
+        { text:'微信号反正也没啥用，租出去赚点零花钱', correct:false },
+        { text:'坚决拒绝，并提醒小刚这可能是违法的', correct:true }
+      ],
+      reactOk:'🎉 <b>太清醒了！</b>出租微信号/银行卡/电话卡，都是给骗子"递刀"。',
+      reactBad:'😰 <b>危险！</b>出租微信号 = 帮信罪的"递刀"，肥东两个职校生就是这么被判刑的。',
+      teach:[
+        { ico:'⚖️', hot:false, title:'这是犯罪', text:'出租微信号、银行卡、电话卡，是在给骗子"递刀"，涉嫌<b>帮助信息网络犯罪活动罪</b>（简称"帮信罪"）。' },
+        { ico:'💸', hot:true, title:'300 元/小时的真相', text:'看似轻松赚钱，实则是拿你的身份帮骗子洗钱、拨号。安徽肥东两名职校生因此<b>被判刑、留下案底</b>。' },
+        { ico:'📜', hot:false, title:'两部法律', text:'<b>《反电信网络诈骗法》</b>明令禁止出借"两卡"；<b>《刑法》</b>规定帮信罪情节严重的，可处三年以下有期徒刑。' },
+        { ico:'🚫', hot:false, title:'别碰这三样', text:'<b>不出租微信号、不出借银行卡、不卖电话卡。</b>朋友拉你一起，也要坚决拒绝并提醒他。' },
+        { ico:'🎓', hot:false, title:'影响一辈子', text:'一旦有案底，<b>参军、考公、找工作都会受影响</b>——300 元一小时，换不来这些。' }
+      ]
+    },
+    {
+      tag:'第三关', name:'AI 换脸借钱', theme:'防骗工具包',
+      other:{ ico:'📹', nm:'"班主任"', },
+      who:'"班主任"', whoBad:false,
+      bubble:'晚上，小明接到"班主任"的视频电话——画面和声音都是班主任本人，说学校临时收资料费，让小明用父母手机转 <span class="hl">800 元</span>到指定账户，很急。',
+      options:[
+        { text:'班主任本人视频，肯定是真的，赶紧转账', correct:false },
+        { text:'挂断，回拨班主任真实号码核实，或问家长', correct:true }
+      ],
+      reactOk:'🎉 <b>漂亮！</b>AI 换脸能伪造人脸和声音，视频里"眼见"也未必为实。',
+      reactBad:'😰 <b>上当了！</b>这是 AI 换脸诈骗——骗子能伪造班主任的脸和声音。',
+      teach:[
+        { ico:'🤖', hot:false, title:'AI 换脸是啥', text:'骗子用<b>几张照片、几秒语音</b>，就能合成"班主任"的脸和声音。视频里"眼见为实"已经不灵了。' },
+        { ico:'🔁', hot:false, title:'破解一招', text:'<b>挂断 → 回拨本人真实号码（或当面、问家长）核实。</b>真的班主任不会拒绝你核实。' },
+        { ico:'📞', hot:false, title:'记住 96110', text:'<b>96110</b> 是国家反诈中心专线。拿不准就打 96110，或拨 110 报警。' },
+        { ico:'🛡️', hot:false, title:'三不一多', text:'<b>不轻信、不透露、不转账，多核实。</b>记住这七个字，就是你的"武器包"。' }
+      ]
+    }
+  ];
+
+  /* ================= 音效 ================= */
+  var audioCtx=null;
+  function initAudio(){ try{ if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();} if(audioCtx.state==='suspended'){audioCtx.resume();} }catch(e){} }
+  function beep(f,d,t,v){ if(!audioCtx)return; try{ var o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type=t||'sine'; o.frequency.value=f; g.gain.value=v||0.16; o.connect(g); g.connect(audioCtx.destination); var t0=audioCtx.currentTime; o.start(t0); g.gain.setValueAtTime(v||0.16,t0); g.gain.exponentialRampToValueAtTime(0.001,t0+d); o.stop(t0+d);}catch(e){} }
+  function sOK(){ beep(660,.12); setTimeout(function(){beep(880,.18);},90); }
+  function sBAD(){ beep(220,.3,'sawtooth',.12); }
+  function sPop(){ beep(540,.08,'triangle',.12); }
+  function sWin(){ beep(523,.18); setTimeout(function(){beep(659,.18);},160); setTimeout(function(){beep(784,.32);},320); }
+
+  /* ================= 状态 ================= */
+  var state={ screen:'intro', level:0, phase:'scene', picked:null, results:[], taught:0 };
+
+  function $(id){ return document.getElementById(id); }
+  function el(html){ var d=document.createElement('div'); d.innerHTML=html; return d.firstChild; }
+
+  function render(){
+    var app=$('app');
+    if(state.screen==='intro') app.innerHTML=introHTML();
+    else if(state.screen==='level') app.innerHTML=levelHTML();
+    else if(state.screen==='result') app.innerHTML=resultHTML();
+  }
+
+  function topbarHTML(){
+    var s='<div class="topbar">';
+    for(var i=0;i<3;i++){
+      var cls='step';
+      if(i<state.level) cls+=' done'; else if(i===state.level) cls+=' active';
+      var mark=i<state.level?'✓':(i+1);
+      s+='<div class="'+cls+'"><div class="dot">'+mark+'</div><div class="lbl">'+LEVELS[i].name+'</div></div>';
+      if(i<2) s+='<div class="arrow">→</div>';
+    }
+    return s+'</div>';
+  }
+
+  /* ============ 开场页 ============ */
+  function introHTML(){
+    var lv='';
+    var icos=['🎮','💰','📹'], ds=['进群领皮肤？','出租号赚钱？','班主任借钱？'];
+    LEVELS.forEach(function(L,i){
+      lv+='<div class="lv-card"><div class="ico">'+icos[i]+'</div><div class="nm">'+L.name+'</div><div class="ds">'+ds[i]+'</div></div>';
+    });
+    return '<div class="stage"><div class="intro-wrap">'+
+      '<div class="intro-badge">全班闯关 · 情景判断</div>'+
+      '<div class="intro-hero">'+xiaoming('normal')+'<h1 class="intro-title">小明的一个<br><span class="accent">普通下午</span></h1></div>'+
+      '<div class="intro-sub">三个岔路口，你替小明选——选完看后果，闯完学知识</div>'+
+      '<div class="lv-list">'+lv+'</div>'+
+      '<div class="intro-sub" style="color:#94A3B8;font-size:clamp(13px,2vh,18px);">玩法：全班讨论 → 代表(或全班举手)选 → 看动画 → 进讲解</div>'+
+      '<button class="btn-start" onclick="startGame()">开始闯关</button>'+
+      '</div></div>';
+  }
+
+  /* ============ 关卡页 ============ */
+  function levelHTML(){
+    var L=LEVELS[state.level];
+
+    if(state.phase==='scene'){
+      return topbarHTML()+ scenePhaseHTML(L);
+    } else {
+      return topbarHTML()+ teachPhaseHTML(L);
+    }
+  }
+
+  function scenePhaseHTML(L){
+    var mood='normal';
+    if(state.picked!==null){ mood=L.options[state.picked].correct?'happy':'sad'; }
+    var mingHtml=xiaoming(mood);
+
+    var opts='';
+    L.options.forEach(function(o,i){
+      var cls='opt';
+      if(state.picked!==null){ cls+=' disabled'; if(o.correct) cls+=' picked-ok'; else if(state.picked===i) cls+=' picked-bad'; else cls+=' dim'; }
+      opts+='<div class="'+cls+'" onclick="pick('+i+')"><div class="tag">'+(i===0?'A':'B')+'</div><div>'+o.text+'</div></div>';
+    });
+
+    var bubble='';
+    if(state.picked===null){
+      bubble='<div class="bubble'+(L.whoBad?' bad':'')+'"><span class="who">'+L.who+'</span><br>'+L.bubble+'</div>';
+    } else {
+      var ok=L.options[state.picked].correct;
+      var cls=ok?'result-ok':'result-bad';
+      bubble='<div class="bubble '+cls+'">'+(ok?L.reactOk:L.reactBad)+'</div>';
+    }
+
+    var foot='';
+    if(state.picked!==null){
+      foot='<div class="foot"><button class="btn-next" onclick="goTeach()">看讲解 →</button></div>';
+    }
+
+    return '<div class="stage">'+
+      '<div class="scene-wrap">'+
+        '<div class="actor"><div class="avatar other" style="'+(state.picked===null?'':'animation:none;')+'">'+L.other.ico+'</div><div class="name">'+L.other.nm+'</div></div>'+
+        bubble+
+        '<div class="actor">'+mingHtml+'<div class="name">小明</div></div>'+
+      '</div>'+
+      '<div class="options">'+opts+'</div>'+
+      foot+
+      '</div>';
+  }
+
+  /* ============ 讲解页 ============ */
+  function teachPhaseHTML(L){
+    var shown=L.teach.slice(0, state.taught);
+    var cards='';
+    shown.forEach(function(t){
+      cards+='<div class="card'+(t.hot?' hot':'')+'"><div class="c-ico">'+t.ico+'</div><div class="c-body"><div class="c-title">'+t.title+'</div><div class="c-text">'+t.text+'</div></div></div>';
+    });
+
+    var hint='';
+    var foot='';
+    if(state.taught < L.teach.length){
+      hint='<div class="teach-hint" onclick="nextCard()">👆 点击屏幕，揭晓下一条知识点</div>';
+    } else {
+      var nextLabel= state.level===2 ? '查看战果' : '下一关 →';
+      foot='<div class="foot"><button class="btn-next" onclick="nextLevel()">'+nextLabel+'</button></div>';
+    }
+
+    var mingMood = state.results[state.level] ? 'happy' : 'sad';
+
+    return '<div class="stage"><div class="teach-wrap">'+
+      '<div class="teach-head">'+xiaoming(mingMood)+
+        '<div class="tt"><div class="teach-tag">'+L.tag+' 通关 · '+L.theme+'</div><div class="teach-title">这一关，你学到了什么？</div><div class="teach-sub">老师每讲一条，点一下屏幕揭晓——和'+L.name+'案例一一对应</div></div>'+
+      '</div>'+
+      '<div class="teach-stage" id="teachStage">'+cards+hint+'</div>'+
+      '<div class="teach-progress">已揭晓 '+state.taught+' / '+L.teach.length+' 条</div>'+
+      foot+
+      '</div></div>';
+  }
+
+  /* ============ 结算页 ============ */
+  function resultHTML(){
+    var allOk=state.results.every(function(r){return r;});
+    var cards='';
+    var reminds=['天上不会掉皮肤','别给骗子递刀','涉钱必核实'];
+    LEVELS.forEach(function(L,i){
+      var ok=state.results[i];
+      cards+='<div class="r-card '+(ok?'ok':'bad')+'"><div class="rn">'+L.name+'</div><div class="rs">'+(ok?'✓ 躲过了':'✗ 踩坑了')+'</div><div class="remind">'+reminds[i]+'</div></div>';
+    });
+    var title= allOk ? '三关全过，完美！' : '闯关完成，坑都记住了！';
+    var emoji= allOk ? '🏆' : '💪';
+    return '<div class="stage"><div class="result-wrap">'+
+      '<div class="result-emoji">'+emoji+'</div>'+
+      '<div class="result-badge">'+(allOk?'金牌通关':'闯关完成')+'</div>'+
+      '<h1 class="result-title">'+title+'</h1>'+
+      '<div class="intro-sub">记住这些坑，你就是自己的"网络安全官"——现在去 PPT 里领取"反诈武器包"</div>'+
+      '<div class="result-grid">'+cards+'</div>'+
+      '<button class="btn-restart" onclick="restart()">再来一次</button>'+
+      '</div></div>';
+  }
+
+  /* ============ 交互 ============ */
+  window.startGame=function(){
+    initAudio();
+    state.screen='level'; state.level=0; state.phase='scene'; state.picked=null; state.results=[]; state.taught=0;
+    render();
+  };
+  window.pick=function(i){
+    if(state.picked!==null) return;
+    state.picked=i;
+    var ok=LEVELS[state.level].options[i].correct;
+    state.results[state.level]=ok;
+    if(ok) sOK(); else sBAD();
+    render();
+    // 滚动到反馈气泡
+    var stage=$('app');
+    if(stage) stage.scrollTop=0;
+  };
+  window.goTeach=function(){
+    state.phase='teach'; state.taught=0;
+    sPop();
+    render();
+  };
+  window.nextCard=function(){
+    var L=LEVELS[state.level];
+    if(state.taught < L.teach.length){
+      state.taught++;
+      sPop();
+      render();
+      // 滚动到底部
+      setTimeout(function(){ var s=$('teachStage'); if(s){ s.scrollTop=s.scrollHeight; } },60);
+    }
+  };
+  window.nextLevel=function(){
+    if(state.level<2){ state.level++; state.phase='scene'; state.picked=null; state.taught=0; render(); }
+    else { state.screen='result'; sWin(); render(); }
+  };
+  window.restart=function(){
+    state.screen='intro'; state.level=0; state.phase='scene'; state.picked=null; state.results=[]; state.taught=0;
+    render();
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
